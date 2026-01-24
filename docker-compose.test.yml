@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mongodb-test:
+    image: mongo:6
+    container_name: user-api-mongodb-test
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: userdb-test
+    tmpfs:
+      - /data/db  # In-memory database (faster, auto-wipes)
+
+  app-test:
+    build: .
+    container_name: user-api-test
+    environment:
+      NODE_ENV: test
+      MONGO_URI: mongodb://mongodb-test:27017/userdb-test
+    depends_on:
+      - mongodb-test
+    command: npm test
