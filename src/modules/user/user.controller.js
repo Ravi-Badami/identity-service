@@ -1,4 +1,5 @@
 
+const ApiError = require('../../utils/ApiError');
 const userService=require("./user.service");
 
 exports.getAllUsers=async(req,res,next)=>{
@@ -10,6 +11,15 @@ res.send(users);
     next(error);
   }
 };
+
+exports.getUserById=async(req,res,next)=>{
+  try {
+  const getSingleUser=await userService.getOneUser(req.params.id);
+  res.send(getSingleUser);
+      } catch (error) {
+    next(error);
+  }
+}
 
 exports.createNewUser=async(req,res,next)=>{
   try {

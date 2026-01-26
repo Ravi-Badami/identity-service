@@ -6,6 +6,12 @@ exports.getAllUsers = async () => {
   return repo.findAllUsers();
 };
 
+exports.getOneUser=async(id)=>{
+  if(!id) throw ApiError.badRequest("Id must be given");
+  return repo.findUserById(id);
+
+}
+
 exports.createUser = async (userData) => {
   const { email, password, ...rest } = userData;
   if (!email || !password) {
@@ -25,6 +31,7 @@ exports.createUser = async (userData) => {
   const { password: _, ...safeUser } = user.toObject ? user.toObject() : user;
   return safeUser;
 };
+
 
 exports.deleteUser=async(id)=>{
   console.log(id);

@@ -12,6 +12,10 @@ exports.findUserByEmail=async(email)=>{
   return await User.findOne({email});
 }
 
+exports.findUserById=async(id)=>{
+  return await User.findById({_id:id});
+}
+
 exports.deleteUser=async(id)=>{
   return await User.deleteOne({_id:id});
 }
