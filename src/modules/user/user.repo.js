@@ -13,5 +13,5 @@ exports.findUserByEmail=async(email)=>{
 }
 
 exports.deleteUser=async(id)=>{
-  return await User.deleteOne(id);
+  return await User.deleteOne({_id:id});
 }

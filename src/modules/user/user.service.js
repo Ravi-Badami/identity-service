@@ -27,6 +27,10 @@ exports.createUser = async (userData) => {
 };
 
 exports.deleteUser=async(id)=>{
+  console.log(id);
+  if(id===undefined) throw ApiError.badRequest("Id is undefined");
+  
   const deletedUser=await repo.deleteUser(id);
+  if(deletedUser.deletedCount===0)throw ApiError.badRequest("couldnt delete");
   return deletedUser;
 }
