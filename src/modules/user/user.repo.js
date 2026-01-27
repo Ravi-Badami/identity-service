@@ -1,10 +1,11 @@
 const User=require('./user.model')
 
-exports.findAllUsers=async()=>{
-  return await User.find().select('-password').lean();
+exports.findUsers=async()=>{
+ return await User.findById(id).select('-password').lean();
+
 }
 
-exports.addUsers=async(userData)=>{
+exports.createUser=async(userData)=>{
   return await User.create(userData);
 }
 
@@ -17,5 +18,5 @@ exports.findUserById=async(id)=>{
 }
 
 exports.deleteUser=async(id)=>{
-  return await User.deleteOne({_id:id});
+  return await User.findByIdAndDelete(id);
 }

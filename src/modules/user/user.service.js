@@ -2,13 +2,15 @@ const repo = require('./user.repo');
 const bcrypt = require('bcrypt');
 const ApiError = require('../../utils/ApiError');
 
-exports.getAllUsers = async () => {
-  return repo.findAllUsers();
+exports.getUsers = async () => {
+  return repo.findUsers();
 };
 
 exports.getOneUser=async(id)=>{
   if(!id) throw ApiError.badRequest("Id must be given");
-  return repo.findUserById(id);
+  const user=await repo.findUserById(id);
+  if(!user)throw ApiError.notFound("User not found");
+  return user;
 
 }
 
@@ -27,7 +29,7 @@ exports.createUser = async (userData) => {
     password: hashedPassword,
     ...rest
   };
-  const user = await repo.addUsers(userToCreate);
+  const user = await repo.createUser(userToCreate);
   const { password: _, ...safeUser } = user.toObject ? user.toObject() : user;
   return safeUser;
 };
@@ -38,6 +40,8 @@ exports.deleteUser=async(id)=>{
   if(id===undefined) throw ApiError.badRequest("Id is undefined");
   
   const deletedUser=await repo.deleteUser(id);
-  if(deletedUser.deletedCount===0)throw ApiError.badRequest("couldnt delete");
+
+if (!deletedUser)
+  throw ApiError.notFound("User not found");
   return deletedUser;
 }

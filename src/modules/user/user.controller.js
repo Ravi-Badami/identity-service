@@ -1,41 +1,25 @@
 
 const ApiError = require('../../utils/ApiError');
+const asyncHandler = require('../../utils/asyncHandler');
 const userService=require("./user.service");
 
-exports.getAllUsers=async(req,res,next)=>{
-  try{
-const users=await userService.getAllUsers();
-res.send(users);
-  }
-  catch(error){
-    next(error);
-  }
-};
+exports.getUsers = asyncHandler(async (req, res, next) => {
+  const users = await userService.getUsers();
+  res.status(200).send(users);
+});
 
-exports.getUserById=async(req,res,next)=>{
-  try {
-  const getSingleUser=await userService.getOneUser(req.params.id);
-  res.send(getSingleUser);
-      } catch (error) {
-    next(error);
-  }
-}
+exports.getUser = asyncHandler(async (req, res, next) => {
+  const getSingleUser = await userService.getOneUser(req.params.id);
+  res.status(200).send(getSingleUser);
+});
 
-exports.createNewUser=async(req,res,next)=>{
-  try {
-    const newUser=await userService.createUser(req.body);
-    res.send(newUser);
-  } catch (error) {
-    next(error)
-  }
-};
+exports.createUser = asyncHandler(async (req, res, next) => {
+  const newUser = await userService.createUser(req.body);
+  res.status(201).send(newUser);
+});
 
-exports.deleteUser=async(req,res,next)=>{
-  try {
-    const deleteUser=await userService.deleteUser(req.params.id);
-    res.send(deleteUser);
-  } catch (error) {
-    next(error);
-  }
-}
+exports.deleteUser = asyncHandler(async (req, res, next) => {
+  const deleteUser = await userService.deleteUser(req.params.id);
+  res.status(200).send(deleteUser);
+});
 
