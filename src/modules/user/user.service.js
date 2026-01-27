@@ -2,8 +2,36 @@ const repo = require('./user.repo');
 const bcrypt = require('bcrypt');
 const ApiError = require('../../utils/ApiError');
 
-exports.getUsers = async () => {
-  return repo.findUsers();
+exports.getUsers = async (query) => {
+  const limit = parseInt(query.limit) || 20;
+  const page = parseInt(query.page) || 1;
+  const cursor = query.cursor;
+
+  let filter = {};
+  let skip = 0;
+
+  if (cursor) {
+    // Sequential navigation: use cursor (fast)
+    filter = { _id: { $gt: cursor } };
+  } else if (page > 1) {
+    // Page jumping: use offset (slower but acceptable)
+    skip = (page - 1) * limit;
+  }
+
+  const users = await repo.findUsers(filter, skip, limit);
+  const total = await repo.countUsers();
+  
+  // Calculate next cursor
+  const nextCursor = users.length > 0 ? users[users.length - 1]._id : null;
+
+  return {
+    data: users,
+    nextCursor,
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit)
+  };
 };
 
 exports.getOneUser=async(id)=>{

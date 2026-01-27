@@ -1,8 +1,17 @@
 const User=require('./user.model')
 
-exports.findUsers = async () => {
-  return await User.find().select('-password').lean();
-}
+exports.findUsers = async (query = {}, skip = 0, limit = 10) => {
+  return await User.find(query)
+    .sort({ _id: 1 }) // Crucial for cursor pagination
+    .skip(skip)
+    .limit(limit)
+    .select('-password')
+    .lean();
+};
+
+exports.countUsers = async () => {
+  return await User.countDocuments();
+};
 
 exports.createUser=async(userData)=>{
   return await User.create(userData);

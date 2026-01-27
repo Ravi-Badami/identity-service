@@ -4,8 +4,8 @@ const asyncHandler = require('../../utils/asyncHandler');
 const userService=require("./user.service");
 
 exports.getUsers = asyncHandler(async (req, res, next) => {
-  const users = await userService.getUsers();
-  res.status(200).send(users);
+  const result = await userService.getUsers(req.query);
+  res.status(200).send(result);
 });
 
 exports.getUser = asyncHandler(async (req, res, next) => {
