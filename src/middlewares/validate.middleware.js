@@ -9,10 +9,13 @@ const validate = (schema) => (req, res, next) => {
     });
     next();
   } catch (error) {
-    const errorMessage = error.errors
-      .map((details) => details.message)
-      .join(", ");
-    next(ApiError.badRequest(errorMessage));
+    if (error.errors) {
+      const errorMessage = error.errors
+        .map((details) => details.message)
+        .join(", ");
+      return next(ApiError.badRequest(errorMessage));
+    }
+    next(error);
   }
 };
 

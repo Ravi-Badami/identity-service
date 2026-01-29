@@ -16,6 +16,15 @@ const createUserSchema = z.object({
   }).strict(),
 });
 
+const userLoginSchema=z.object({
+  body: z.object({
+ 
+    email: z.string().trim().email("Invalid email").transform(v => v.toLowerCase()),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  
+  }).strict(),
+});
+
 
 // params validation
 const userIdSchema = z.object({
@@ -26,5 +35,6 @@ const userIdSchema = z.object({
 
 module.exports = {
   createUserSchema,
+  userLoginSchema,
   userIdSchema,
 };
