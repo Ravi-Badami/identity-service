@@ -11,6 +11,8 @@ router.post('/auth/register', strictLimiter, validate(createUserSchema), authCon
 
 router.post('/auth/login',strictLimiter,validate(userLoginSchema),authController.loginUser)
 
+router.post('/auth/refresh', authController.refreshAuth);
+
 
 
 

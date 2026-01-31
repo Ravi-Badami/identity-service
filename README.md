@@ -49,6 +49,16 @@ This codebase implements several advanced patterns to solve real-world productio
 **Solution**: Applied the **Equality - Sort - Range (ESR)** rule to Mongoose schemas.
 -   Indexes are structured to first filter exact matches (e.g., `role`), then apply sorting (e.g., `createdAt`), ensuring the sort operation is performed in the index rather than in memory.
 
+### 5. Advanced Authentication (Token Rotation Strategy)
+
+**Problem**: Static refresh tokens handling is insecure. If a refresh token is stolen, the attacker has permanent access until the token expires.
+
+**Solution**: Implemented **RTR (Refresh Token Rotation)** with **Token Families** and **Reuse Detection**.
+-   **Token Families**: Every login creates a "Family" of tokens.
+-   **Rotation**: Every time a token is used to refresh, it is invalidated and replaced by a new one in the same family.
+-   **Grace Period**: A short window (60s) where the old token is still accepted to handle concurrent requests (race conditions).
+-   **Theft Detection**: If an old token (outside grace period) is used, the system assumes theft and **revokes the entire family**, logging out both the attacker and the legitimate user.
+
 ---
 
 ## System Architecture
@@ -142,6 +152,11 @@ docker-compose up -d --build
 
 ---
 
+## API Documentation (Swagger)
+
+Interactive API documentation is available at:
+`http://localhost:5000/api-docs`
+
 ## API Reference
 
 | Method | Endpoint | Description |
@@ -150,6 +165,9 @@ docker-compose up -d --build
 | `POST` | `/users` | Create user (Rate-limited & Validated) |
 | `GET` | `/users/:id` | Retrieve user profile by ID |
 | `DELETE` | `/users/:id` | Delete user record |
+| `POST` | `/auth/register` | Register new user |
+| `POST` | `/auth/login` | Login (Returns Access & Refresh Tokens) |
+| `POST` | `/auth/refresh` | Rotate tokens using Token Families |
 
 ---
 

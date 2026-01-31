@@ -15,12 +15,12 @@ app.use(express.json());
 // Swagger Page
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use(userRoutes);
-app.use(authRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1', authRoutes);
 
 //404 handler (BEFORE error middleware)
 app.use((req,res,next)=>{
-  next(ApiError.notFound('Route ${req.originalUrl} not found'));
+  next(ApiError.notFound(`Route ${req.originalUrl} not found`));
 })
 
 app.use(errorHandler);
