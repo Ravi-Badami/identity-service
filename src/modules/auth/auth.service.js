@@ -121,3 +121,21 @@ exports.registerUser = async (userData) => {
   const { password: _, ...safeUser } = user.toObject ? user.toObject() : user;
   return safeUser;
 };
+
+exports.logoutUser = async (refreshToken) => {
+  if(!refreshToken){
+    throw ApiError.badRequest("Refresh Token is required");
+  }
+  let decoded;
+  try {
+     decoded = jwtUtils.verifyRefreshToken(refreshToken);
+  } catch (error) {
+     // Even if token is expired/invalid, we technically can't find the family easily 
+     // unless we decode without verification, but for security, if it's invalid, 
+     // we can just imply they are logged out. 
+     // However, let's treat it as success to be idempotent.
+     return;
+  }
+  const { familyId } = decoded;
+  await authRepo.revokeFamily(familyId);
+};
