@@ -58,6 +58,7 @@ This codebase implements several advanced patterns to solve real-world productio
 -   **Rotation**: Every time a token is used to refresh, it is invalidated and replaced by a new one in the same family.
 -   **Grace Period**: A short window (60s) where the old token is still accepted to handle concurrent requests (race conditions).
 -   **Theft Detection**: If an old token (outside grace period) is used, the system assumes theft and **revokes the entire family**, logging out both the attacker and the legitimate user.
+-   **Secure Logout**: Manually revokes the token family, strictly invalidating all refresh tokens for that session.
 
 ---
 
@@ -68,6 +69,42 @@ The project adheres to a strict **Repository-Service-Controller** layered archit
 -   **Controller Layer**: Handles HTTP transport, input parsing, and response formatting. Contains zero business logic.
 -   **Service Layer**: Encapsulates business logic, including password hashing, complex validation rules, and algorithm selection.
 -   **Repository Layer**: Manages direct database interactions. This abstraction allows the underlying database to be swapped with minimal impact on business logic.
+
+---
+
+## Testing & Quality Assurance
+
+Comprehensive testing strategy ensuring code reliability and preventing regression.
+
+### Testing Stack
+-   **Jest**: Feature-rich testing framework.
+-   **Supertest**: HTTP assertions for integration testing.
+-   **MongoDB Memory Server**: In-memory database for fast, isolated integration tests.
+
+### Running Tests
+
+1.  **Execute All Tests**
+    ```bash
+    npm test
+    ```
+
+2.  **Run Specific Suites**
+    ```bash
+    # Unit Tests Only
+    npx jest src/tests/unit
+
+    # Integration Tests Only
+    npx jest src/tests/integration
+    ```
+
+3.  **Watch Mode** (for development)
+    ```bash
+    npm test -- --watch
+    ```
+
+### Test Structure
+-   `src/tests/unit`: Tests individual functions (Utils, Services, Middlewares) in isolation using mocks.
+-   `src/tests/integration`: Tests full API endpoints (Routes -> Controller -> Service -> DB) using a real in-memory database.
 
 ---
 
@@ -89,6 +126,7 @@ This project utilizes a focused selection of production-proven libraries:
 
 ### Development Utilities
 -   **Nodemon**: Utility for automatic server restarts during development.
+-   **Jest**: JavaScript Testing Framework with a focus on simplicity.
 
 ---
 
@@ -107,6 +145,9 @@ src/
 │       ├── user.repo.js        # Data Access Layer
 │       ├── user.model.js       # Database Schema
 │       └── user.routes.js      # Route Definitions
+├── tests/              # Test Suites
+│   ├── unit/           # Unit Tests
+│   └── integration/    # Integration Tests (API Endpoints)
 ├── utils/              # Shared Utilities (AsyncHandler, ApiError)
 └── server.js           # Application Entry Point
 ```
@@ -161,13 +202,13 @@ Interactive API documentation is available at:
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/users` | List users with cursor/offset pagination strategies |
-| `POST` | `/users` | Create user (Rate-limited & Validated) |
-| `GET` | `/users/:id` | Retrieve user profile by ID |
-| `DELETE` | `/users/:id` | Delete user record |
-| `POST` | `/auth/register` | Register new user |
-| `POST` | `/auth/login` | Login (Returns Access & Refresh Tokens) |
-| `POST` | `/auth/refresh` | Rotate tokens using Token Families |
+| `GET` | `/api/v1/users` | List users with cursor/offset pagination strategies |
+| `POST` | `/api/v1/auth/register` | Create user (Rate-limited & Validated) |
+| `GET` | `/api/v1/users/:id` | Retrieve user profile by ID |
+| `DELETE` | `/api/v1/users/:id` | Delete user record |
+| `POST` | `/api/v1/auth/login` | Login (Returns Access & Refresh Tokens) |
+| `POST` | `/api/v1/auth/refresh` | Rotate tokens using Token Families |
+| `POST` | `/api/v1/auth/logout` | Secure Logout (Revokes Token Family) |
 
 ---
 

@@ -46,6 +46,9 @@ const errorHandler=(err,req,res,next)=>{
 
   // Wrap unknown errors
   if (!(error instanceof ApiError)) {
+    console.error('DEBUG: Error is NOT instance of ApiError. Type:', error.constructor.name);
+    console.error('DEBUG: Error prototype chain:', Object.getPrototypeOf(error));
+    console.error('DEBUG: ApiError prototype:', ApiError.prototype);
     error = ApiError.internal(error.message);
   }
 // Hide non-operational errors in production
