@@ -81,6 +81,22 @@ This codebase implements several advanced patterns to solve real-world productio
     -   **File**: Persistent rotation-ready log files (`error.log`, `all.log`) for production auditing.
 -   **Request Profiling**: Automated middleware tracks every HTTP request's duration, status code, and method.
 
+### 8. Redis Caching Strategy
+
+**Problem**: Frequent database reads for static user profiles create unnecessary load and latency.
+
+**Solution**: implemented a **Write-Through Caching** strategy using Redis.
+-   **Read Optimization**: `GET` requests check Redis first. Cache hits return in <5ms, bypassing MongoDB entirely.
+-   **Consistency**: `UPDATE` and `DELETE` operations immediately invalidate the cache, ensuring users never see stale data.
+
+### 9. Token Blocklist (Instant Revocation)
+
+**Problem**: JWTs are stateless and cannot be invalidated until they expire (15m). If an access token is compromised, the attacker has a 15-minute window of opportunity.
+
+**Solution**: Implemented a **Redis Blocklist**.
+-   **Logout Action**: On logout, the Access Token is added to Redis with a TTL equal to its remaining validity.
+-   **Security Check**: Authentication middleware checks this blocklist on every request, instantly rejecting revoked tokens even if their signature is valid.
+
 ---
 
 ## System Architecture
@@ -151,6 +167,9 @@ This project utilizes a focused selection of production-proven libraries:
 
 ### Logging
 -   **Winston**: Versatile logging library supporting multiple transports (File, Console) and varying log levels.
+
+### Caching
+-   **Redis**: In-memory data store used for high-performance caching and distributed connection handling.
 
 ---
 

@@ -4,6 +4,7 @@ const jwtUtils=require('../../utils/jwt.utils');
 const bcrypt = require('bcrypt');
 const ApiError = require('../../utils/ApiError');
 const logger = require('../../config/logger');
+const redisClient = require('../../config/redis');
 
 
 exports.loginUser = async (userData) => {
@@ -130,10 +131,28 @@ exports.registerUser = async (userData) => {
   return safeUser;
 };
 
-exports.logoutUser = async (refreshToken) => {
+exports.logoutUser = async (refreshToken, accessToken) => {
   if(!refreshToken){
     throw ApiError.badRequest("Refresh Token is required");
   }
+
+  // 1. Blacklist Access Token (if provided)
+  if (accessToken) {
+    try {
+      const decoded = jwtUtils.verifyAccessToken(accessToken); // Or just decode without verify if we trust it's ours
+      const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+      
+      if (ttl > 0) {
+        await redisClient.setEx(`bl_${accessToken}`, ttl, "revoked");
+        logger.info(`Access Token blacklisted. TTL: ${ttl}s`);
+      }
+    } catch (err) {
+      logger.warn(`Logout: Could not blacklist access token: ${err.message}`);
+      // Continue to revoke refresh token anyway
+    }
+  }
+
+  // 2. Revoke Refresh Token Family
   let decoded;
   try {
      decoded = jwtUtils.verifyRefreshToken(refreshToken);

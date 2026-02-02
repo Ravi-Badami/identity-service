@@ -1,5 +1,6 @@
 const jwtUtils = require('../utils/jwt.utils');
 const ApiError = require('../utils/ApiError');
+const redisClient = require('../config/redis');
 
 exports.authenticate = async (req, res, next) => {
   try {
@@ -20,6 +21,12 @@ exports.authenticate = async (req, res, next) => {
     try {
       // Verify the token
       const decoded = jwtUtils.verifyAccessToken(token);
+
+      // [NEW] Check Blocklist
+      const isBlacklisted = await redisClient.get(`bl_${token}`);
+      if (isBlacklisted) {
+        throw ApiError.unauthorized('Token is revoked');
+      }
       
       // Attach user info (including role) to the request object
       req.user = decoded; 

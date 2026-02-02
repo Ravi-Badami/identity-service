@@ -17,6 +17,7 @@ exports.refreshAuth=asyncHandler(async(req,res)=>{
 })
 
 exports.logoutUser=asyncHandler(async(req,res)=>{
-  await authService.logoutUser(req.body.refreshToken);
+  const accessToken = req.headers.authorization?.split(' ')[1];
+  await authService.logoutUser(req.body.refreshToken, accessToken);
   res.status(200).json({ success: true, message: "Logged out successfully" });
 })
