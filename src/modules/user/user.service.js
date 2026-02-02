@@ -1,6 +1,7 @@
 const repo = require('./user.repo');
 const bcrypt = require('bcrypt');
 const ApiError = require('../../utils/ApiError');
+const logger = require('../../config/logger');
 
 exports.getUsers = async (query) => {
   const limit = parseInt(query.limit) || 20;
@@ -46,7 +47,7 @@ exports.getOneUser=async(id)=>{
 
 
 exports.deleteUser=async(id)=>{
-  console.log(id);
+  logger.debug(`Deleting user with id: ${id}`);
   if(id===undefined) throw ApiError.badRequest("Id is undefined");
   
   const deletedUser=await repo.deleteUser(id);

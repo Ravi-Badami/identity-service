@@ -1,4 +1,5 @@
 const ApiError=require("../utils/ApiError");
+const logger = require('../config/logger');
 
 const errorHandler=(err,req,res,next)=>{
   let error =err;
@@ -8,14 +9,11 @@ const errorHandler=(err,req,res,next)=>{
   error.message=error.message||"Internal server error";
   
   //Log error
-  console.log("Error",{
-    message:error.message,
-    statusCode:error.statusCode,
-    path:req.path,
-    method:req.method,
-    timestamp:new Date().toISOString(),
-    ...(process.env.NODE_ENV="development"&&{stack:error.stack})
-  });
+  logger.error(`${error.statusCode} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+
+  if(process.env.NODE_ENV === "development"){
+    logger.debug(error.stack);
+  }
 
   //
   if(err.name==="ValidationError"){
@@ -46,9 +44,9 @@ const errorHandler=(err,req,res,next)=>{
 
   // Wrap unknown errors
   if (!(error instanceof ApiError)) {
-    console.error('DEBUG: Error is NOT instance of ApiError. Type:', error.constructor.name);
-    console.error('DEBUG: Error prototype chain:', Object.getPrototypeOf(error));
-    console.error('DEBUG: ApiError prototype:', ApiError.prototype);
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug(`Error is NOT instance of ApiError. Type: ${error.constructor.name}`);
+    }
     error = ApiError.internal(error.message);
   }
 // Hide non-operational errors in production
@@ -74,14 +72,14 @@ const errorHandler=(err,req,res,next)=>{
 };
 const handleUnhandledRejection = () => {
   process.on("unhandledRejection", (reason) => {
-    console.error("UNHANDLED REJECTION 💥", reason);
+    logger.error(`UNHANDLED REJECTION 💥 ${reason}`);
     process.exit(1);
   });
 };
 
 const handleUncaughtException = () => {
   process.on("uncaughtException", (err) => {
-    console.error("UNCAUGHT EXCEPTION 💥", err);
+    logger.error(`UNCAUGHT EXCEPTION 💥 ${err.name}: ${err.message}`);
     process.exit(1);
   });
 };

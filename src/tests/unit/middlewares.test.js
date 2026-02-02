@@ -2,6 +2,15 @@ const { errorHandler } = require('../../middlewares/error.middleware');
 const validate = require('../../middlewares/validate.middleware');
 const ApiError = require('../../utils/ApiError');
 
+// Mock the logger
+jest.mock('../../config/logger', () => ({
+  error: jest.fn(),
+  info: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+}));
+const logger = require('../../config/logger');
+
 describe('Middleware Unit Tests', () => {
   describe('Error Middleware', () => {
     let req, res, next;
@@ -13,13 +22,12 @@ describe('Middleware Unit Tests', () => {
         json: jest.fn(),
       };
       next = jest.fn();
-      // Mock console.log/error to keep test output clean
-      jest.spyOn(console, 'log').mockImplementation(() => {});
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      // Clear logger mocks before each test
+      jest.clearAllMocks();
     });
 
     afterEach(() => {
-      jest.clearAllMocks();
+      // jest.clearAllMocks() is enough
     });
 
     test('should handle ApiError correctly', () => {

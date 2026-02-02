@@ -3,6 +3,7 @@ const authRepo=require('./auth.repo');
 const jwtUtils=require('../../utils/jwt.utils');
 const bcrypt = require('bcrypt');
 const ApiError = require('../../utils/ApiError');
+const logger = require('../../config/logger');
 
 
 exports.loginUser = async (userData) => {
@@ -15,18 +16,18 @@ exports.loginUser = async (userData) => {
   const familyId = jwtUtils.generateFamilyId();
 
   if (!userWithPassword) {
-    console.error('DEBUG: Login failed. User not found for email:', email);
+    logger.debug(`Login failed. User not found for email: ${email}`);
     // Double check if user exists without password select
     const checkUser = await userRepo.findUserByEmail(email);
-    console.error('DEBUG: Checking regular findUserByEmail:', checkUser ? 'Found' : 'Not Found', checkUser);
+    logger.debug(`Checking regular findUserByEmail: ${checkUser ? 'Found' : 'Not Found'} ${checkUser}`);
     throw ApiError.notFound("Invalid email or pass");
   }
 
   const isMatch = await bcrypt.compare(password, userWithPassword.password);
   if (!isMatch) {
-    console.error('DEBUG: Login failed. Password mismatch for:', email);
-    console.error('DEBUG: Stored hash:', userWithPassword.password);
-    console.error('DEBUG: Provided pass:', password);
+    logger.debug(`Login failed. Password mismatch for: ${email}`);
+    logger.debug(`Stored hash: ${userWithPassword.password}`);
+    logger.debug(`Provided pass: ${password}`);
     throw ApiError.notFound("Invalid email or pass");
   }
 

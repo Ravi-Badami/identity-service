@@ -6,11 +6,15 @@ const { errorHandler,handleUnhandledRejection, handleUncaughtException } = requi
 const ApiError = require('./utils/ApiError');
 const requestTimeout = require('./middlewares/timeout.middleware');
 
+const requestLogger=require("./middlewares/logger.middleware");
+
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 
 app.use(express.json());
+
+app.use(requestLogger);
 
 // Swagger Page
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -25,15 +29,7 @@ app.use((req,res,next)=>{
 
 app.use(errorHandler);
 
-
-
 handleUnhandledRejection();
 handleUncaughtException();
-
-
-
-
-
-
 
 module.exports=app;
