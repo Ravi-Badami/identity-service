@@ -106,6 +106,17 @@ This codebase implements several advanced patterns to solve real-world productio
 -   **Zero-Downtime Reloads**: Allows code deployment without dropping active connections.
 -   **Graceful Shutdown**: Intercepts system signals (`SIGINT`, `SIGTERM`) to stop accepting new requests, close database/redis connections, and finish active requests before exiting, ensuring no user data is lost during scaling or deployment.
 
+### 11. Secure Email Verification
+
+**Problem**: Allowing users to register with fake or invalid emails compromises system integrity and password recovery flows.
+
+**Solution**: Implemented a **Token-Based Verification System**.
+-   **Security**: Verification tokens are cryptographically generated and stored as **hashes** in the database. Even if the DB is leaked, active verification links cannot be reverse-engineered.
+-   **Infrastructure**:
+    -   **Development**: Uses Ethereal Email (fake SMTP) and logs preview URLs directly to the console for easy testing without spamming real inboxes.
+    -   **Production**: Automatically switches to real SMTP services (e.g., SendGrid/AWS SES) via environment configuration.
+-   **Flow**: Users receive a time-sensitive link. Clicking it hits a secure endpoint that validates the token hash and activates the account.
+
 ---
 
 ## System Architecture
@@ -275,7 +286,9 @@ Interactive API documentation is available at:
 | `DELETE` | `/api/v1/users/:id` | Delete user record (Admin Only) |
 | `POST` | `/api/v1/auth/login` | Login (Returns Access & Refresh Tokens) |
 | `POST` | `/api/v1/auth/refresh` | Rotate tokens using Token Families |
+| `POST` | `/api/v1/auth/refresh` | Rotate tokens using Token Families |
 | `POST` | `/api/v1/auth/logout` | Secure Logout (Revokes Token Family) |
+| `GET` | `/api/v1/user/auth/verifyemail/:token` | Verify user email address |
 
 ---
 
