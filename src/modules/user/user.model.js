@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const crypto = require('crypto');
+
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -35,6 +38,8 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  verificationToken: String,
+  verificationTokenExpire: Date,
   lastLogin: {
     type: Date
   }
@@ -45,4 +50,25 @@ const userSchema = new mongoose.Schema({
 // Follows ESR: Equality (role) → Sort (createdAt)
 userSchema.index({ role: 1, createdAt: -1 });
 userSchema.index({ name: 1 });
+
+
+// Generate and hash password token
+userSchema.methods.getVerificationToken = function() {
+  // 1. Generate token (random bytes)
+  const verificationToken = crypto.randomBytes(20).toString('hex');
+
+  // 2. Hash token and set to schema field
+  this.verificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  // 3. Set expire (10 mins)
+  this.verificationTokenExpire = Date.now() + 10 * 60 * 1000;
+
+  // 4. Return original token (to send in email)
+  return verificationToken;
+};
+
+
 module.exports = mongoose.model('User', userSchema);

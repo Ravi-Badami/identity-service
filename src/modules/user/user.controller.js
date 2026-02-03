@@ -2,7 +2,7 @@
 const ApiError = require('../../utils/ApiError');
 const asyncHandler = require('../../utils/asyncHandler');
 const userService=require("./user.service");
-const {cacheSet,cacheDelete}=require("../../middlewares/cache.middleware");s
+const {cacheSet,cacheDelete}=require("../../middlewares/cache.middleware");
 
 exports.getUsers = asyncHandler(async (req, res, next) => {
   const result = await userService.getUsers(req.query);

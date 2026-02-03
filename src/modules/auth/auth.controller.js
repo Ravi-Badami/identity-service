@@ -21,3 +21,11 @@ exports.logoutUser=asyncHandler(async(req,res)=>{
   await authService.logoutUser(req.body.refreshToken, accessToken);
   res.status(200).json({ success: true, message: "Logged out successfully" });
 })
+
+exports.verifyEmail = asyncHandler(async (req, res) => {
+  const result = await authService.verifyEmail(req.params.token);
+  res.status(200).json({
+    success: true,
+    data: result
+  });
+});

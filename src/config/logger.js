@@ -55,6 +55,13 @@ const transports = [
   new winston.transports.File({ filename: 'logs/all.log' }),
 ];
 
+// Create the logger instance that has to be exported 
+// and used to log messages.
+const logger = winston.createLogger({
+  level: level(),
+  levels,
+  format,
+  transports,
+});
 
-
-
+module.exports = logger;

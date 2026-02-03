@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const ApiError = require('../../utils/ApiError');
 const logger = require('../../config/logger');
 const redisClient = require('../../config/redis');
+const sendEmail = require('../email/email.service');
+const crypto = require('crypto');
 
 
 exports.loginUser = async (userData) => {
@@ -113,22 +115,67 @@ exports.refreshAuth = async (incomingToken) => {
 
 exports.registerUser = async (userData) => {
   const { email, password, ...rest } = userData;
+  
   if (!email || !password) {
     throw ApiError.badRequest("Email and password are required");
   }
+
   const existingUser = await userRepo.findUserByEmail(email);
   if (existingUser) {
     throw ApiError.conflict("Email already taken");
   }
+
   const hashedPassword = await bcrypt.hash(password, 10);
-  const userToCreate = {
+
+  // 1. Create the user in DB (Initially returns Mongoose Document)
+  const user = await authRepo.registerUser({
     email,
     password: hashedPassword,
     ...rest
-  };
-  const user = await authRepo.registerUser(userToCreate);
+  });
+
+  // 2. Generate Verification Token (Updates the document in memory)
+  const verificationToken = user.getVerificationToken();
+
+  // 3. Save the token to DB via Repository
+  await authRepo.saveUser(user);
+
+  // 4. Send Verification Email
+  const verifyUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/api/v1/auth/verifyemail/${verificationToken}`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Email Verification',
+      message: `Please verify your email: ${verifyUrl}`
+    });
+  } catch (err) {
+    // 5. Rollback: If email fails, delete the user
+    await userRepo.deleteUser(user._id);
+    throw new ApiError(500, 'Email could not be sent. Please try again.');
+  }
+
   const { password: _, ...safeUser } = user.toObject ? user.toObject() : user;
   return safeUser;
+};
+
+exports.verifyEmail = async (token) => {
+  // 1. Hash the token (matches how we stored it)
+  const verificationToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+  // 2. Find user with this token AND who is not expired
+  const user = await authRepo.findUserByVerificationToken(verificationToken);
+  if (!user) {
+    throw ApiError.badRequest('Invalid or expired verification token');
+  }
+  // 3. Mark verified and clear token
+  user.isEmailVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpire = undefined;
+  await authRepo.saveUser(user);
+  return { message: 'Email verified successfully' };
 };
 
 exports.logoutUser = async (refreshToken, accessToken) => {

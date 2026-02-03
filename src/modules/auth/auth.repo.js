@@ -33,6 +33,15 @@ exports.revokeFamily=async(familyId)=>{
   return await Token.deleteMany({familyId});
 }
 
+exports.saveUser = async (user) => {
+  return await user.save({ validateBeforeSave: false });
+};
 
 
 
+exports.findUserByVerificationToken = async (token) => {
+  return await User.findOne({
+    verificationToken: token,
+    verificationTokenExpire: { $gt: Date.now() }
+  });
+};
